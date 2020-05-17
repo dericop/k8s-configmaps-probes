@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dojoapolo-deployment
+  labels:
+    app: dojoapolo
+spec:
+  replicas: 5
+  selector:
+    matchLabels:
+      app: dojoapolo
+  template:
+    metadata:
+      labels:
+        app: dojoapolo
+    spec:
+      containers:
+        - name: dojoapolo
+          image: dericop/dojoapolo:latest
+          ports:
+            - containerPort: 8080
+          volumeMounts:
+            - name: config
+              mountPath: /app/config
+              readOnly: true
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 10
+      volumes:
+        - name: config
+          configMap:
+            name: dojoapolo-configmap
